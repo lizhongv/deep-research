@@ -13,9 +13,9 @@ import { generateFeedback } from './feedback';  // 生成追问
 // 2. 辅助函数
 function log(...args: any[]) {
   console.log(...args);
-}
+} 
 
-const rl = readline.createInterface({
+const rl = readline.createInterface({  // 创建readline接口，在命令行实现交互式输入与输出
   input: process.stdin,
   output: process.stdout,
 });
