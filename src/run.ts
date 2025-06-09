@@ -29,44 +29,29 @@ function askQuestion(query: string): Promise<string> {  // 封装命令行提问
   });
 }
 
-// run the agent   3. 主流程函数
+// 3. 主流程函数
+// run the agent   
 async function run() {
   console.log('Using model: ', getModel().modelId);
 
-  // Get initial query    3.1 获取基础参数
+  //  3.1 获取基础参数
+  // Get initial query   
   const initialQuery = await askQuestion('What would you like to research? ');
 
   // Get breath and depth parameters
-  const breadth =
-    parseInt(
-      await askQuestion(
-        'Enter research breadth (recommended 2-10, default 4): ',
-      ),
-      10,
-    ) || 4;
-  const depth =
-    parseInt(
-      await askQuestion('Enter research depth (recommended 1-5, default 2): '),
-      10,
-    ) || 2;
-  const isReport =
-    (await askQuestion(
-      'Do you want to generate a long report or a specific answer? (report/answer, default report): ',
-    )) !== 'answer';
+  const breadth = parseInt(await askQuestion('Enter research breadth (recommended 2-10, default 4): ', ), 10, ) || 4;
+  const depth = parseInt(await askQuestion('Enter research depth (recommended 1-5, default 2): '), 10, ) || 2;
+  const isReport = (await askQuestion('Do you want to generate a long report or a specific answer? (report/answer, default report): ',)) !== 'answer';
 
-  // 3.2  生成不能够收集追问
+  // 3.2  生成并收集追问
   let combinedQuery = initialQuery;
   if (isReport) {
     log(`Creating research plan...`);
 
     // Generate follow-up questions     
-    const followUpQuestions = await generateFeedback({
-      query: initialQuery,
-    });
+    const followUpQuestions = await generateFeedback({query: initialQuery,});
 
-    log(
-      '\nTo better understand your research needs, please answer these follow-up questions:',
-    );
+    log('\nTo better understand your research needs, please answer these follow-up questions:', );
 
     // Collect answers to follow-up questions
     const answers: string[] = [];
