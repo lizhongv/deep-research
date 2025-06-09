@@ -1,15 +1,16 @@
-import * as fs from 'fs/promises';
-import * as readline from 'readline';
+// 1. 依赖引入
+import * as fs from 'fs/promises';  // 文件系统（异步操作）
+import * as readline from 'readline';  // 命令行交互
 
-import { getModel } from './ai/providers';
+import { getModel } from './ai/providers';  // AI模型获取
 import {
   deepResearch,
   writeFinalAnswer,
   writeFinalReport,
-} from './deep-research';
-import { generateFeedback } from './feedback';
+} from './deep-research';  // 研究核心逻辑
+import { generateFeedback } from './feedback';  // 生成追问
 
-// Helper function for consistent logging
+// 2. 辅助函数
 function log(...args: any[]) {
   console.log(...args);
 }
@@ -19,8 +20,8 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-// Helper function to get user input
-function askQuestion(query: string): Promise<string> {
+
+function askQuestion(query: string): Promise<string> {  // 封装命令行提问
   return new Promise(resolve => {
     rl.question(query, answer => {
       resolve(answer);
@@ -28,11 +29,11 @@ function askQuestion(query: string): Promise<string> {
   });
 }
 
-// run the agent
+// run the agent   3. 主流程函数
 async function run() {
   console.log('Using model: ', getModel().modelId);
 
-  // Get initial query
+  // Get initial query    3.1 获取基础参数
   const initialQuery = await askQuestion('What would you like to research? ');
 
   // Get breath and depth parameters
@@ -53,11 +54,12 @@ async function run() {
       'Do you want to generate a long report or a specific answer? (report/answer, default report): ',
     )) !== 'answer';
 
+  // 3.2  生成不能够收集追问
   let combinedQuery = initialQuery;
   if (isReport) {
     log(`Creating research plan...`);
 
-    // Generate follow-up questions
+    // Generate follow-up questions     
     const followUpQuestions = await generateFeedback({
       query: initialQuery,
     });
