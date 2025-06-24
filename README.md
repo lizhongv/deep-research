@@ -1,29 +1,31 @@
-## Run
+## 安装及运行
 
 ```bash
-# 下载源码并进入工作目录
+# 下载源码，进入工作目录
 git clone git@github.com:lizhongv/deep-research.git
 cd deep-research
 
 
-# 修改环境变量：
+# 修改环境变量
 cp .env.example .env.local
 vi .env.local
+
 # FIRECRAWL_KEY=xxx
 # OPENAI_KEY=xxx
 # OPENAI_ENDPOINT="https://api.openai-proxy.org/v1"
+# DEEPSEEK_API_KEY="YOUR_KEY"
+# DEEPSEEK_ENDPOINT="https://api.deepseek.com/v1"
 
-
-# 安装所需要依赖
+# 安装依赖
 npm install
 
-# 运行
+# 运行程序
 npm start
 ```
 
-## 命令程序
+## 运行的细节
 
-首先会询问你想研究什么主题，并让你填写研究的广度和深度，以及最后希望生成报告还是答案：
+首先问研究主题，并让填写研究的广度和深度，以及最后希望生成报告还是答案。
 
 ```bash
 What would you like to research? A2A
@@ -33,7 +35,7 @@ Do you want to generate a long report or a specific answer? (report/answer, defa
 Creating research plan...
 ```
 
-程序会向用户提三个问题，进一步澄清要研究的主题
+程向用户提三个问题，进一步澄清要研究的主题。
 
 ```bash
 To better understand your research needs, please answer these follow-up questions:
@@ -50,7 +52,7 @@ Your answer: technical functionality
 Starting research...
 ```
 
-深度研究生成三个子问题
+深度研究中间生成三个子问题。
 
 ```bash
 Created 3 queries [
