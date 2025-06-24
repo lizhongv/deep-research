@@ -34,10 +34,7 @@ function askQuestion(query: string): Promise<string> {
 async function run() {
   console.log('Using model: ', getModel().modelId);
 
-  // Get initial query
   const initialQuery = await askQuestion('What would you like to research? ');
-
-  // Get breath and depth parameters
   const breadth =
     parseInt(
       await askQuestion(
@@ -50,16 +47,13 @@ async function run() {
       await askQuestion('Enter research depth (recommended 1-5, default 2): '),
       10,
     ) || 2;
-
-  // Ask if the user wants a report or a specific answer
   const isReport =
     (await askQuestion(
       'Do you want to generate a long report or a specific answer? (report/answer, default report): ',
     )) !== 'answer';
 
-  let combinedQuery = initialQuery;
-
   // If the user wants a specific answer, we use the initial query directly, else we create a research plan
+  let combinedQuery = initialQuery;
   if (isReport) {
     log(`Creating research plan...`);
 
@@ -70,7 +64,6 @@ async function run() {
       '\nTo better understand your research needs, please answer these follow-up questions:',
     );
 
-    // Collect answers to follow-up questions
     const answers: string[] = [];
     for (const question of followUpQuestions) {
       const answer = await askQuestion(`\n${question}\nYour answer: `);
@@ -85,9 +78,8 @@ ${followUpQuestions.map((q: string, i: number) => `Q: ${q}\nA: ${answers[i]}`).j
 `;
   }
 
-  // 4. Start deep research
   log('\nStarting research...\n');
-
+  // 4. Start deep research
   const { learnings, visitedUrls } = await deepResearch({
     query: combinedQuery,
     breadth,
