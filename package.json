@@ -20,19 +20,22 @@
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.13.0",
     "@types/uuid": "^9.0.8",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.3",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^0.2.14",
     "@ai-sdk/fireworks": "^0.1.14",
     "@ai-sdk/openai": "^1.1.9",
     "@mendable/firecrawl-js": "^1.16.0",
     "ai": "^4.1.17",
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "express": "^4.18.3",
     "js-tiktoken": "^1.0.17",
     "lodash-es": "^4.17.21",
+    "openai": "^5.5.0",
     "p-limit": "^6.2.0",
     "uuid": "^9.0.1",
     "zod": "^3.24.1"

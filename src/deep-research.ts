@@ -29,14 +29,12 @@ type ResearchResult = {
 // increase this if you have higher API rate limits
 const ConcurrencyLimit = Number(process.env.FIRECRAWL_CONCURRENCY) || 2;
 
-// Initialize Firecrawl with optional API key and optional base url
-
+// Create a new Firecrawl app instance with the provided API key and base URL.
 const firecrawl = new FirecrawlApp({
   apiKey: process.env.FIRECRAWL_KEY ?? '',
   apiUrl: process.env.FIRECRAWL_BASE_URL,
 });
 
-// take en user query, return a list of SERP queries
 async function generateSerpQueries({
   query,
   numQueries = 3,
@@ -44,8 +42,6 @@ async function generateSerpQueries({
 }: {
   query: string;
   numQueries?: number;
-
-  // optional, if provided, the research will continue from the last learning
   learnings?: string[];
 }) {
   const res = await generateObject({
@@ -53,9 +49,7 @@ async function generateSerpQueries({
     system: systemPrompt(),
     prompt: `Given the following prompt from the user, generate a list of SERP queries to research the topic. Return a maximum of ${numQueries} queries, but feel free to return less if the original prompt is clear. Make sure each query is unique and not similar to each other: <prompt>${query}</prompt>\n\n${
       learnings
-        ? `Here are some learnings from previous research, use them to generate more specific queries: ${learnings.join(
-            '\n',
-          )}`
+        ? `Here are some learnings from previous research, use them to generate more specific queries: ${learnings.join('\n')}`
         : ''
     }`,
     schema: z.object({
@@ -89,8 +83,8 @@ async function processSerpResult({
   numLearnings?: number;
   numFollowUpQuestions?: number;
 }) {
-  const contents = compact(result.data.map(item => item.markdown)).map(content =>
-    trimPrompt(content, 25_000),
+  const contents = compact(result.data.map(item => item.markdown)).map(
+    content => trimPrompt(content, 25_000),
   );
   log(`Ran ${query}, found ${contents.length} contents`);
 
@@ -104,7 +98,9 @@ async function processSerpResult({
         .join('\n')}</contents>`,
     ),
     schema: z.object({
-      learnings: z.array(z.string()).describe(`List of learnings, max of ${numLearnings}`),
+      learnings: z
+        .array(z.string())
+        .describe(`List of learnings, max of ${numLearnings}`),
       followUpQuestions: z
         .array(z.string())
         .describe(
@@ -137,7 +133,9 @@ export async function writeFinalReport({
       `Given the following prompt from the user, write a final report on the topic using the learnings from research. Make it as as detailed as possible, aim for 3 or more pages, include ALL the learnings from research:\n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>`,
     ),
     schema: z.object({
-      reportMarkdown: z.string().describe('Final report on the topic in Markdown'),
+      reportMarkdown: z
+        .string()
+        .describe('Final report on the topic in Markdown'),
     }),
   });
 
@@ -166,7 +164,9 @@ export async function writeFinalAnswer({
     schema: z.object({
       exactAnswer: z
         .string()
-        .describe('The final answer, make it short and concise, just the answer, no other text'),
+        .describe(
+          'The final answer, make it short and concise, just the answer, no other text',
+        ),
     }),
   });
 
@@ -202,6 +202,7 @@ export async function deepResearch({
     onProgress?.(progress);
   };
 
+  // 5. Generate multiple SERP queries based on the user query and any previous learnings
   const serpQueries = await generateSerpQueries({
     query,
     learnings,
@@ -215,6 +216,7 @@ export async function deepResearch({
 
   const limit = pLimit(ConcurrencyLimit);
 
+  // 6. Concurrently run all SERP queries
   const results = await Promise.all(
     serpQueries.map(serpQuery =>
       limit(async () => {
@@ -230,6 +232,7 @@ export async function deepResearch({
           const newBreadth = Math.ceil(breadth / 2);
           const newDepth = depth - 1;
 
+          // 7. Process the SERP result to extract learnings and follow-up questions
           const newLearnings = await processSerpResult({
             query: serpQuery.query,
             result,
@@ -239,7 +242,9 @@ export async function deepResearch({
           const allUrls = [...visitedUrls, ...newUrls];
 
           if (newDepth > 0) {
-            log(`Researching deeper, breadth: ${newBreadth}, depth: ${newDepth}`);
+            log(
+              `Researching deeper, breadth: ${newBreadth}, depth: ${newDepth}`,
+            );
 
             reportProgress({
               currentDepth: newDepth,
@@ -248,6 +253,7 @@ export async function deepResearch({
               currentQuery: serpQuery.query,
             });
 
+            // 8. Generate the next research query based on the new learnings
             const nextQuery = `
             Previous research goal: ${serpQuery.researchGoal}
             Follow-up research directions: ${newLearnings.followUpQuestions.map(q => `\n${q}`).join('')}

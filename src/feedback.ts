@@ -1,5 +1,5 @@
-import { generateObject } from 'ai';
-import { z } from 'zod';
+import { generateObject } from 'ai';   // AI SDK for generating structured outputs
+import { z } from 'zod';  // Zod for schema validation
 
 import { getModel } from './ai/providers';
 import { systemPrompt } from './prompt';
@@ -24,5 +24,5 @@ export async function generateFeedback({
     }),
   });
 
-  return userFeedback.object.questions.slice(0, numQuestions);
+  return userFeedback.object.questions.slice(0, numQuestions);  // Return only the specified number of questions
 }

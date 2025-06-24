@@ -1,204 +1,72 @@
-# Open Deep Research
-
-An AI-powered research assistant that performs iterative, deep research on any topic by combining search engines, web scraping, and large language models.
-
-The goal of this repo is to provide the simplest implementation of a deep research agent - e.g. an agent that can refine its research direction over time and deep dive into a topic. Goal is to keep the repo size at <500 LoC so it is easy to understand and build on top of.
-
-If you like this project, please consider starring it and giving me a follow on [X/Twitter](https://x.com/dzhng). This project is sponsored by [Aomni](https://aomni.com).
-
-## How It Works
-
-```mermaid
-flowchart TB
-    subgraph Input
-        Q[User Query]
-        B[Breadth Parameter]
-        D[Depth Parameter]
-    end
-
-    DR[Deep Research] -->
-    SQ[SERP Queries] -->
-    PR[Process Results]
-
-    subgraph Results[Results]
-        direction TB
-        NL((Learnings))
-        ND((Directions))
-    end
-
-    PR --> NL
-    PR --> ND
-
-    DP{depth > 0?}
-
-    RD["Next Direction:
-    - Prior Goals
-    - New Questions
-    - Learnings"]
-
-    MR[Markdown Report]
-
-    %% Main Flow
-    Q & B & D --> DR
-
-    %% Results to Decision
-    NL & ND --> DP
-
-    %% Circular Flow
-    DP -->|Yes| RD
-    RD -->|New Context| DR
-
-    %% Final Output
-    DP -->|No| MR
-
-    %% Styling
-    classDef input fill:#7bed9f,stroke:#2ed573,color:black
-    classDef process fill:#70a1ff,stroke:#1e90ff,color:black
-    classDef recursive fill:#ffa502,stroke:#ff7f50,color:black
-    classDef output fill:#ff4757,stroke:#ff6b81,color:black
-    classDef results fill:#a8e6cf,stroke:#3b7a57,color:black
-
-    class Q,B,D input
-    class DR,SQ,PR process
-    class DP,RD recursive
-    class MR output
-    class NL,ND results
-```
-
-## Features
-
-- **Iterative Research**: Performs deep research by iteratively generating search queries, processing results, and diving deeper based on findings
-- **Intelligent Query Generation**: Uses LLMs to generate targeted search queries based on research goals and previous findings
-- **Depth & Breadth Control**: Configurable parameters to control how wide (breadth) and deep (depth) the research goes
-- **Smart Follow-up**: Generates follow-up questions to better understand research needs
-- **Comprehensive Reports**: Produces detailed markdown reports with findings and sources
-- **Concurrent Processing**: Handles multiple searches and result processing in parallel for efficiency
-
-## Requirements
-
-- Node.js environment
-- API keys for:
-  - Firecrawl API (for web search and content extraction)
-  - OpenAI API (for o3 mini model)
-
-## Setup
-
-### Node.js
-
-1. Clone the repository
-2. Install dependencies:
+## Run
 
 ```bash
+# 下载源码并进入工作目录
+git clone git@github.com:lizhongv/deep-research.git
+cd deep-research
+
+
+# 修改环境变量：
+cp .env.example .env.local
+vi .env.local
+# FIRECRAWL_KEY=xxx
+# OPENAI_KEY=xxx
+# OPENAI_ENDPOINT="https://api.openai-proxy.org/v1"
+
+
+# 安装所需要依赖
 npm install
-```
 
-3. Set up environment variables in a `.env.local` file:
-
-```bash
-FIRECRAWL_KEY="your_firecrawl_key"
-# If you want to use your self-hosted Firecrawl, add the following below:
-# FIRECRAWL_BASE_URL="http://localhost:3002"
-
-OPENAI_KEY="your_openai_key"
-```
-
-To use local LLM, comment out `OPENAI_KEY` and instead uncomment `OPENAI_ENDPOINT` and `OPENAI_MODEL`:
-
-- Set `OPENAI_ENDPOINT` to the address of your local server (eg."http://localhost:1234/v1")
-- Set `OPENAI_MODEL` to the name of the model loaded in your local server.
-
-### Docker
-
-1. Clone the repository
-2. Rename `.env.example` to `.env.local` and set your API keys
-
-3. Run `docker build -f Dockerfile`
-
-4. Run the Docker image:
-
-```bash
-docker compose up -d
-```
-
-5. Execute `npm run docker` in the docker service:
-
-```bash
-docker exec -it deep-research npm run docker
-```
-
-## Usage
-
-Run the research assistant:
-
-```bash
+# 运行
 npm start
 ```
 
-You'll be prompted to:
+## 命令程序
 
-1. Enter your research query
-2. Specify research breadth (recommended: 3-10, default: 4)
-3. Specify research depth (recommended: 1-5, default: 2)
-4. Answer follow-up questions to refine the research direction
-
-The system will then:
-
-1. Generate and execute search queries
-2. Process and analyze search results
-3. Recursively explore deeper based on findings
-4. Generate a comprehensive markdown report
-
-The final report will be saved as `report.md` or `answer.md` in your working directory, depending on which modes you selected.
-
-### Concurrency
-
-If you have a paid version of Firecrawl or a local version, feel free to increase the `ConcurrencyLimit` by setting the `CONCURRENCY_LIMIT` environment variable so it runs faster.
-
-If you have a free version, you may sometimes run into rate limit errors, you can reduce the limit to 1 (but it will run a lot slower).
-
-### DeepSeek R1
-
-Deep research performs great on R1! We use [Fireworks](http://fireworks.ai) as the main provider for the R1 model. To use R1, simply set a Fireworks API key:
+首先会询问你想研究什么主题，并让你填写研究的广度和深度，以及最后希望生成报告还是答案：
 
 ```bash
-FIREWORKS_KEY="api_key"
+What would you like to research? A2A
+Enter research breadth (recommended 2-10, default 4): 3
+Enter research depth (recommended 1-5, default 2): 2
+Do you want to generate a long report or a specific answer? (report/answer, default report): report
+Creating research plan...
 ```
 
-The system will automatically switch over to use R1 instead of `o3-mini` when the key is detected.
-
-### Custom endpoints and models
-
-There are 2 other optional env vars that lets you tweak the endpoint (for other OpenAI compatible APIs like OpenRouter or Gemini) as well as the model string.
+程序会向用户提三个问题，进一步澄清要研究的主题
 
 ```bash
-OPENAI_ENDPOINT="custom_endpoint"
-CUSTOM_MODEL="custom_model"
+To better understand your research needs, please answer these follow-up questions:
+
+Can you clarify what A2A stands for in your query (e.g., account-to-account transfers, application-to-application communications, or another meaning)?
+Your answer: google a2a protocol
+
+What specific industry or application domain are you targeting with A2A (such as fintech, SaaS integration, IoT, etc.)?
+Your answer: technology
+
+Are you interested in the technological framework/architecture, regulatory aspects, or business models associated with A2A solutions?
+Your answer: technical functionality
+
+Starting research...
 ```
 
-## How It Works
+深度研究生成三个子问题
 
-1. **Initial Setup**
+```bash
+Created 3 queries [
+  {
+    query: 'Google A2A protocol technical architecture deep dive',
+    researchGoal: 'Investigate the core technical components and architectural principles of the Google A2A protocol. The objective is to uncover detailed documentation, whitepapers, and case studies that describe how the protocol is engineered, focusing on its data exchange methods, scalability, and optimization techniques. Once the architectural components and design rationales are identified, further research could compare the protocol’s structure to similar communication frameworks in the technology industry and assess its adaptability to emerging systems.'
+  },
+  {
+    query: 'Google A2A protocol integration and interoperability standards',
+    researchGoal: 'Examine how the Google A2A protocol interfaces with other systems and platforms within the technology ecosystem. The goal is to identify interoperability standards, API integration strategies, and compliance with industry protocols. Additional research directions include studying the adaptation of the protocol in multi-vendor environments and exploring its impact on system cohesion and data exchange efficiency across diverse technological frameworks.'
+  },
+  {
+    query: 'Google A2A protocol performance evaluation and security architecture',
+    researchGoal: 'Analyze the performance metrics and security measures implemented within the Google A2A protocol. The research should target benchmarks, latency, throughput data, as well as encryption strategies, authentication processes, and risk mitigation techniques employed. Beyond initial performance analysis, further inquiry may include critical reviews of potential vulnerabilities, stress testing results, and comparisons with alternative protocols to determine overall reliability in technologically intensive environments.'
+  }
+]
+```
 
-   - Takes user query and research parameters (breadth & depth)
-   - Generates follow-up questions to understand research needs better
-
-2. **Deep Research Process**
-
-   - Generates multiple SERP queries based on research goals
-   - Processes search results to extract key learnings
-   - Generates follow-up research directions
-
-3. **Recursive Exploration**
-
-   - If depth > 0, takes new research directions and continues exploration
-   - Each iteration builds on previous learnings
-   - Maintains context of research goals and findings
-
-4. **Report Generation**
-   - Compiles all findings into a comprehensive markdown report
-   - Includes all sources and references
-   - Organizes information in a clear, readable format
-
-## License
-
-MIT License - feel free to use and modify as needed.
+https://github.com/user-attachments/assets/9e07da90-e85d-4e78-8780-8cc408241809
